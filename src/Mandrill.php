@@ -96,7 +96,7 @@ class Mandrill {
 
     public function call($url, $params) {
         $params['key'] = $this->apikey;
-        $params = json_encode($params);
+        $params = $this->safeArrayJsonEncode($params);
         $ch = $this->ch;
 
         curl_setopt($ch, CURLOPT_URL, $this->root . $url . '.json');
@@ -156,6 +156,20 @@ class Mandrill {
     public function log($msg) {
         if($this->debug) error_log($msg);
     }
+
+    /**
+     * This function does safe json encoding for arrays to overcome the risk that the input array can have non-UTF-8
+     * encoded characters, that will lead the PHP function json_encode to return false as output when used.
+     *
+     * @param array $array
+     *
+     * @return string
+     */
+    public static function safeArrayJsonEncode(array $array)
+    {
+        $array = array_map('htmlentities',$array);
+        $json = html_entity_decode(json_encode($array));
+
+        return $json;
+    }
 }
-
-
